@@ -4,10 +4,8 @@ const User = require("../../models/user.model");
 
 const getUsers = async (req, res = response) => {
   try {
-    console.log("User ID:", req.userId); // Verifica que req.userId esté configurado correctamente
-    const users = await User.find({ _id: { $nin: [req.userId] } }).sort(
-      "-online"
-    );
+    const users = await User.find({ _id: { $ne: req.uid } }).sort("-online");
+    console.log("User ID:", req.userId);
     res.json({
       ok: true,
       users,
