@@ -112,33 +112,6 @@ const renewToken = async (req, res = response) => {
   }
 };
 
-// const renewToken = async (req, res = response) => {
-//   const userId = req.userId;
-
-//   try {
-//     const token = await generateJWT(userId);
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({
-//         ok: false,
-//         msg: "Usuario no encontrado",
-//       });
-//     }
-
-//     res.json({
-//       ok: true,
-//       user,
-//       token,
-//     });
-//   } catch (error) {
-//     console.error("Error al renovar token:", error.message);
-//     res.status(500).json({
-//       ok: false,
-//       error: "Error al renovar token",
-//     });
-//   }
-
 module.exports = {
   createUser,
   login,

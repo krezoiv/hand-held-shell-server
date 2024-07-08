@@ -1,10 +1,7 @@
 const jwt = require("jsonwebtoken");
-
 const generateJWT = (userId) => {
   return new Promise((resolve, reject) => {
-    const payload = { userId };
-
-    //console.log("Payload:", payload); // Log para verificar el payload
+    const payload = { userId }; // Asegúrate de que sea 'userId', no 'uid'
 
     jwt.sign(
       payload,
@@ -23,7 +20,7 @@ const generateJWT = (userId) => {
   });
 };
 
-const validateJWT = (token = "") => {
+const validatingJWT = (token = "") => {
   try {
     const { userId } = jwt.verify(token, process.env.JWT_KEY);
     return [true, userId];
@@ -33,4 +30,4 @@ const validateJWT = (token = "") => {
 };
 
 // Exportar la función
-module.exports = { generateJWT, validateJWT };
+module.exports = { generateJWT, validatingJWT };
