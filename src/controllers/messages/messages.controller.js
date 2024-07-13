@@ -30,7 +30,7 @@ const getChat = async (req, res) => {
     // console.log(
     //   "Query used:",
     //   JSON.stringify(query, (key, value) =>
-    //     value instanceof mongoose.Types.ObjectId ? value.toString() : value
+    //     value instanceof mongoose.Types.OsbjectId ? value.toString() : value
     //   )
     // );
 
@@ -43,7 +43,7 @@ const getChat = async (req, res) => {
       messages: last100Messages,
     });
   } catch (error) {
-    console.error("Error fetching messages:", error);
+    // console.error("Error fetching messages:", error);
     res.status(500).json({
       ok: false,
       error: "Error fetching messages",
