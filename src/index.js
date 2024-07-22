@@ -24,7 +24,15 @@ app.use(express.static(publicPath));
 app.use("/api/login", require("./routes/users/auth.routes"));
 app.use("/api/user", require("./routes/users/users.routes"));
 app.use("/api/message", require("./routes/messages/message.routes"));
+app.use(
+  "/api/dispenser-reader",
+  require("./routes/fuel-station/dispenser.reader.routes")
+);
 
+app.use(
+  "/api/generalDispenserReader",
+  require("./routes/fuel-station/general.dispenser.reader.routes")
+);
 server.listen(process.env.PORT, (err) => {
   if (err) throw new Error(err);
 

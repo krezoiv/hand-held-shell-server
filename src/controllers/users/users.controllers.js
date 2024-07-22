@@ -1,6 +1,6 @@
 const { response } = require("express");
 const mongoose = require("mongoose");
-const User = require("../../models/user.model");
+const User = require("../../models/users/user.model");
 
 const getUsers = async (req, res = response) => {
   try {

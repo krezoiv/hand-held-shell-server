@@ -1,5 +1,5 @@
-const User = require("../../models/user.model");
-const Message = require("../../models/messages.model");
+const User = require("../../models/users/user.model");
+const Message = require("../../models/users/messages.model");
 
 const connectedUser = async (userId = "") => {
   const user = await User.findById(userId);
