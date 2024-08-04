@@ -1,66 +1,61 @@
-/**
- * coleccion que se encargara de la toma de lectura de
- * numeracion de cada dispensador
- */
-
 const { Schema, model } = require("mongoose");
 
-const dispenserReaderSchema = Schema(
+const DispenserReaderSchema = Schema(
   {
-    //numeracion anterior
     previousNoGallons: {
       type: Number,
+      required: true,
     },
-    //numeracion actual
     actualNoGallons: {
       type: Number,
+      required: true,
     },
-
-    //total de galones
     totalNoGallons: {
       type: Number,
+      required: true,
     },
-
     previousNoMechanic: {
       type: Number,
+      required: true,
     },
-
     actualNoMechanic: {
       type: Number,
+      required: true,
     },
-
     totalNoMechanic: {
       type: Number,
+      required: true,
     },
-
     previousNoMoney: {
       type: Number,
+      required: true,
     },
-
     actualNoMoney: {
       type: Number,
+      required: true,
     },
-
     totalNoMoney: {
       type: Number,
+      required: true,
     },
-
     assignmentHoseId: {
       type: Schema.Types.ObjectId,
       ref: "AssignmentHose",
+      required: true,
     },
-
     generalDispenserReaderId: {
       type: Schema.Types.ObjectId,
       ref: "GeneralDispenserReader",
+      required: true,
     },
   },
   { collection: "dispenserReaders" }
 );
-dispenserReaderSchema.method("toJSON", function () {
-  const { __V, _id, ...object } = this.toObject();
+
+DispenserReaderSchema.method("toJSON", function () {
+  const { __v, _id, ...object } = this.toObject();
   object.dispenserReaderId = _id;
   return object;
 });
 
-module.exports = model("DispenserReader", dispenserReaderSchema);
+module.exports = model("DispenserReader", DispenserReaderSchema);

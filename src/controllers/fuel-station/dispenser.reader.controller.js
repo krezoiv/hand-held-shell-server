@@ -73,6 +73,127 @@ const lastNumeration = async (req, res = response) => {
   }
 };
 
+const getDispenserReaderById = async (req, res = response) => {
+  try {
+    const { dispenserReaderId } = req.params;
+
+    const dispenserReader = await DispenserReader.findById(dispenserReaderId)
+      .populate({
+        path: "assignmentHoseId",
+        populate: [
+          {
+            path: "hoseId",
+            populate: {
+              path: "fuelId",
+              select: "fuelName",
+            },
+          },
+          {
+            path: "sideId",
+            select: "sideName",
+          },
+          {
+            path: "assignmentId",
+            populate: {
+              path: "dispenserId",
+              select: "dispenserCode",
+            },
+          },
+        ],
+      })
+      .exec();
+
+    if (!dispenserReader) {
+      return res.status(404).json({
+        ok: false,
+        msg: "No se encontró ningún DispenserReader con el ID proporcionado.",
+      });
+    }
+
+    console.log("Dispenser Reader:", dispenserReader);
+
+    res.json({
+      ok: true,
+      dispenserReader,
+    });
+  } catch (error) {
+    console.error("Error fetching dispenser reader by ID:", error);
+    res.status(500).json({
+      ok: false,
+      msg: "Por favor, contacte al administrador.",
+    });
+  }
+};
+
+const penultimetaNumeration = async (req, res = response) => {
+  try {
+    // Buscar el penúltimo registro en lugar del último
+    const penultimateGeneralDispenserReader =
+      await GeneralDispenserReader.findOne()
+        .sort({ _id: -1 })
+        .skip(1) // Saltar el último registro
+        .exec();
+
+    if (!penultimateGeneralDispenserReader) {
+      return res.status(404).json({
+        ok: false,
+        msg: "No se encontró ningún registro en generalDispenserReader.",
+      });
+    }
+
+    console.log(
+      "Penultimate General Dispenser Reader:",
+      penultimateGeneralDispenserReader
+    );
+
+    const dispenserReaders = await DispenserReader.find({
+      generalDispenserReaderId: penultimateGeneralDispenserReader._id,
+    })
+      .populate({
+        path: "assignmentHoseId",
+        populate: [
+          {
+            path: "hoseId",
+            populate: {
+              path: "fuelId",
+              select: "fuelName",
+            },
+          },
+          {
+            path: "sideId",
+            select: "sideName",
+          },
+          {
+            path: "assignmentId",
+            populate: {
+              path: "dispenserId",
+              select: "dispenserCode",
+            },
+          },
+        ],
+      })
+      .exec();
+
+    console.log("Dispenser Readers:", dispenserReaders);
+
+    console.log("Response sent:", {
+      ok: true,
+      dispenserReaders,
+    });
+
+    res.json({
+      ok: true,
+      dispenserReaders,
+    });
+  } catch (error) {
+    console.error("Error fetching dispenser readers:", error);
+    res.status(500).json({
+      ok: false,
+      msg: "Por favor, contacte al administrador.",
+    });
+  }
+};
+
 const addDispenserReader = async (req, res = response) => {
   try {
     const {
@@ -103,11 +224,12 @@ const addDispenserReader = async (req, res = response) => {
       generalDispenserReaderId,
     });
 
-    await newDispenserReader.save();
-
+    const savedDispenserReader = await newDispenserReader.save();
+    console.log(savedDispenserReader._id);
     res.status(201).json({
       ok: true,
-      newDispenserReader,
+      newDispenserReader: savedDispenserReader,
+      dispenserReaderId: savedDispenserReader._id,
     });
   } catch (error) {
     console.error(error);
@@ -130,7 +252,23 @@ const updateDispenserReader = async (req, res = response) => {
       newActualNoMoney,
     } = req.body;
 
-    // 1. Buscar el DispenserReader en la base de datos usando el nuevo ID
+    console.log("Datos recibidos:", {
+      dispenserReaderId,
+      newPreviousNoGallons,
+      newActualNoGallons,
+      newPreviousNoMechanic,
+      newActualNoMechanic,
+      newPreviousNoMoney,
+      newActualNoMoney,
+    });
+
+    const cleanNumber = (num) => {
+      if (typeof num === "string") {
+        return num.replace(/,/g, "");
+      }
+      return num;
+    };
+
     const dispenserReader = await DispenserReader.findById(
       dispenserReaderId
     ).populate({
@@ -150,41 +288,57 @@ const updateDispenserReader = async (req, res = response) => {
         .json({ ok: false, msg: "DispenserReader no encontrado." });
     }
 
-    // 2. Obtener los valores actuales del DispenserReader
-    const dbPreviousNoGallons = dispenserReader.previousNoGallons;
-    const dbActualNoGallons = dispenserReader.actualNoGallons;
-    const dbTotalNoGallons = dispenserReader.totalNoGallons;
-    const dbPreviousNoMechanic = dispenserReader.previousNoMechanic;
-    const dbActualNoMechanic = dispenserReader.actualNoMechanic;
-    const dbTotalNoMechanic = dispenserReader.totalNoMechanic;
-    const dbPreviousNoMoney = dispenserReader.previousNoMoney;
-    const dbActualNoMoney = dispenserReader.actualNoMoney;
-    const dbTotalNoMoney = dispenserReader.totalNoMoney;
-    const dbGeneralDispenserReaderId = dispenserReader.generalDispenserReaderId;
+    const dbFuelName =
+      dispenserReader.assignmentHoseId?.hoseId?.fuelId?.fuelName;
 
-    // 3. Calcular los nuevos totales
-    const newTotalGallons = new Decimal(newActualNoGallons)
-      .minus(newPreviousNoGallons)
+    if (!dbFuelName) {
+      return res
+        .status(400)
+        .json({ ok: false, msg: "Información de combustible no encontrada." });
+    }
+
+    console.log("Nombre del combustible:", dbFuelName);
+
+    // Usar los valores existentes si los nuevos no están definidos
+    const previousNoGallons =
+      newPreviousNoGallons ?? dispenserReader.previousNoGallons;
+    const actualNoGallons =
+      newActualNoGallons ?? dispenserReader.actualNoGallons;
+    const previousNoMechanic =
+      newPreviousNoMechanic ?? dispenserReader.previousNoMechanic;
+    const actualNoMechanic =
+      newActualNoMechanic ?? dispenserReader.actualNoMechanic;
+    const previousNoMoney =
+      newPreviousNoMoney ?? dispenserReader.previousNoMoney;
+    const actualNoMoney = newActualNoMoney ?? dispenserReader.actualNoMoney;
+
+    const newTotalGallons = new Decimal(cleanNumber(actualNoGallons))
+      .minus(cleanNumber(previousNoGallons))
       .toDecimalPlaces(3);
-    const newTotalMechanic = new Decimal(newActualNoMechanic)
-      .minus(newPreviousNoMechanic)
+    const newTotalMechanic = new Decimal(cleanNumber(actualNoMechanic))
+      .minus(cleanNumber(previousNoMechanic))
       .toDecimalPlaces(3);
-    const newTotalMoney = new Decimal(newActualNoMoney)
-      .minus(newPreviousNoMoney)
+    const newTotalMoney = new Decimal(cleanNumber(actualNoMoney))
+      .minus(cleanNumber(previousNoMoney))
       .toDecimalPlaces(3);
 
-    // 4. Actualizar el DispenserReader
+    console.log("Nuevos totales calculados:", {
+      newTotalGallons: newTotalGallons.toString(),
+      newTotalMechanic: newTotalMechanic.toString(),
+      newTotalMoney: newTotalMoney.toString(),
+    });
+
     const updatedDispenserReader = await DispenserReader.findByIdAndUpdate(
       dispenserReaderId,
       {
-        previousNoGallons: newPreviousNoGallons,
-        actualNoGallons: newActualNoGallons,
+        previousNoGallons: cleanNumber(previousNoGallons),
+        actualNoGallons: cleanNumber(actualNoGallons),
         totalNoGallons: newTotalGallons.toNumber(),
-        previousNoMechanic: newPreviousNoMechanic,
-        actualNoMechanic: newActualNoMechanic,
+        previousNoMechanic: cleanNumber(previousNoMechanic),
+        actualNoMechanic: cleanNumber(actualNoMechanic),
         totalNoMechanic: newTotalMechanic.toNumber(),
-        previousNoMoney: newPreviousNoMoney,
-        actualNoMoney: newActualNoMoney,
+        previousNoMoney: cleanNumber(previousNoMoney),
+        actualNoMoney: cleanNumber(actualNoMoney),
         totalNoMoney: newTotalMoney.toNumber(),
       },
       { new: true, runValidators: true }
@@ -196,9 +350,8 @@ const updateDispenserReader = async (req, res = response) => {
         .json({ ok: false, msg: "No se pudo actualizar el DispenserReader." });
     }
 
-    // 5. Obtener el GeneralDispenserReader
     const generalDispenserReader = await GeneralDispenserReader.findById(
-      dbGeneralDispenserReaderId
+      dispenserReader.generalDispenserReaderId
     );
 
     if (!generalDispenserReader) {
@@ -207,46 +360,28 @@ const updateDispenserReader = async (req, res = response) => {
         .json({ ok: false, msg: "GeneralDispenserReader no encontrado." });
     }
 
-    const dbTotalGallonRegular = generalDispenserReader.totalGallonRegular;
-    const dbTotalMechanicRegular = generalDispenserReader.totalMechanicRegular;
-    const dbTotalMoneyRegular = generalDispenserReader.totalMoneyRegular;
-    const dbTotalGallonSuper = generalDispenserReader.totalGallonSuper;
-    const dbTotalMechanicSuper = generalDispenserReader.totalMechanicSuper;
-    const dbTotalMoneySuper = generalDispenserReader.totalMoneySuper;
-    const dbTotalGallonDiesel = generalDispenserReader.totalGallonDiesel;
-    const dbTotalMechanicDiesel = generalDispenserReader.totalMechanicDiesel;
-    const dbTotalMoneyDiesel = generalDispenserReader.totalMoneyDiesel;
-
-    // Verificar si assignmentHoseId y sus propiedades anidadas existen
-    const dbFuelName =
-      dispenserReader.assignmentHoseId &&
-      dispenserReader.assignmentHoseId.hoseId &&
-      dispenserReader.assignmentHoseId.hoseId.fuelId &&
-      dispenserReader.assignmentHoseId.hoseId.fuelId.fuelName;
-
-    if (!dbFuelName) {
-      return res
-        .status(400)
-        .json({ ok: false, msg: "Información de combustible no encontrada." });
-    }
-
-    // 6. Actualizar el GeneralDispenserReader según el tipo de combustible
     let updateFields = {};
     switch (dbFuelName) {
       case "regular":
         updateFields = {
-          totalGallonRegular: new Decimal(dbTotalGallonRegular)
-            .minus(dbTotalNoGallons)
+          totalGallonRegular: new Decimal(
+            generalDispenserReader.totalGallonRegular
+          )
+            .minus(dispenserReader.totalNoGallons)
             .plus(newTotalGallons)
             .toDecimalPlaces(3)
             .toNumber(),
-          totalMechanicRegular: new Decimal(dbTotalMechanicRegular)
-            .minus(dbTotalNoMechanic)
+          totalMechanicRegular: new Decimal(
+            generalDispenserReader.totalMechanicRegular
+          )
+            .minus(dispenserReader.totalNoMechanic)
             .plus(newTotalMechanic)
             .toDecimalPlaces(3)
             .toNumber(),
-          totalMoneyRegular: new Decimal(dbTotalMoneyRegular)
-            .minus(dbTotalNoMoney)
+          totalMoneyRegular: new Decimal(
+            generalDispenserReader.totalMoneyRegular
+          )
+            .minus(dispenserReader.totalNoMoney)
             .plus(newTotalMoney)
             .toDecimalPlaces(3)
             .toNumber(),
@@ -254,18 +389,20 @@ const updateDispenserReader = async (req, res = response) => {
         break;
       case "super":
         updateFields = {
-          totalGallonSuper: new Decimal(dbTotalGallonSuper)
-            .minus(dbTotalNoGallons)
+          totalGallonSuper: new Decimal(generalDispenserReader.totalGallonSuper)
+            .minus(dispenserReader.totalNoGallons)
             .plus(newTotalGallons)
             .toDecimalPlaces(3)
             .toNumber(),
-          totalMechanicSuper: new Decimal(dbTotalMechanicSuper)
-            .minus(dbTotalNoMechanic)
+          totalMechanicSuper: new Decimal(
+            generalDispenserReader.totalMechanicSuper
+          )
+            .minus(dispenserReader.totalNoMechanic)
             .plus(newTotalMechanic)
             .toDecimalPlaces(3)
             .toNumber(),
-          totalMoneySuper: new Decimal(dbTotalMoneySuper)
-            .minus(dbTotalNoMoney)
+          totalMoneySuper: new Decimal(generalDispenserReader.totalMoneySuper)
+            .minus(dispenserReader.totalNoMoney)
             .plus(newTotalMoney)
             .toDecimalPlaces(3)
             .toNumber(),
@@ -273,18 +410,22 @@ const updateDispenserReader = async (req, res = response) => {
         break;
       case "diesel":
         updateFields = {
-          totalGallonDiesel: new Decimal(dbTotalGallonDiesel)
-            .minus(dbTotalNoGallons)
+          totalGallonDiesel: new Decimal(
+            generalDispenserReader.totalGallonDiesel
+          )
+            .minus(dispenserReader.totalNoGallons)
             .plus(newTotalGallons)
             .toDecimalPlaces(3)
             .toNumber(),
-          totalMechanicDiesel: new Decimal(dbTotalMechanicDiesel)
-            .minus(dbTotalNoMechanic)
+          totalMechanicDiesel: new Decimal(
+            generalDispenserReader.totalMechanicDiesel
+          )
+            .minus(dispenserReader.totalNoMechanic)
             .plus(newTotalMechanic)
             .toDecimalPlaces(3)
             .toNumber(),
-          totalMoneyDiesel: new Decimal(dbTotalMoneyDiesel)
-            .minus(dbTotalNoMoney)
+          totalMoneyDiesel: new Decimal(generalDispenserReader.totalMoneyDiesel)
+            .minus(dispenserReader.totalNoMoney)
             .plus(newTotalMoney)
             .toDecimalPlaces(3)
             .toNumber(),
@@ -296,9 +437,14 @@ const updateDispenserReader = async (req, res = response) => {
           .json({ ok: false, msg: "Tipo de combustible no reconocido." });
     }
 
+    console.log(
+      "Campos de actualización para GeneralDispenserReader:",
+      updateFields
+    );
+
     const updatedGeneralDispenserReader =
       await GeneralDispenserReader.findByIdAndUpdate(
-        dbGeneralDispenserReaderId,
+        dispenserReader.generalDispenserReaderId,
         { $set: updateFields },
         { new: true, runValidators: true }
       );
@@ -310,6 +456,21 @@ const updateDispenserReader = async (req, res = response) => {
       });
     }
 
+    console.log(
+      "Intentando actualizar DispenserReader con ID:",
+      dispenserReaderId
+    );
+    console.log("Datos de actualización:", {
+      previousNoGallons: cleanNumber(newPreviousNoGallons),
+      actualNoGallons: cleanNumber(newActualNoGallons),
+      totalNoGallons: newTotalGallons.toNumber(),
+      previousNoMechanic: cleanNumber(newPreviousNoMechanic),
+      actualNoMechanic: cleanNumber(newActualNoMechanic),
+      totalNoMechanic: newTotalMechanic.toNumber(),
+      previousNoMoney: cleanNumber(newPreviousNoMoney),
+      actualNoMoney: cleanNumber(newActualNoMoney),
+      totalNoMoney: newTotalMoney.toNumber(),
+    });
     res.json({
       ok: true,
       msg: "DispenserReader y GeneralDispenserReader actualizados correctamente.",
@@ -327,9 +488,8 @@ const updateDispenserReader = async (req, res = response) => {
 };
 module.exports = {
   lastNumeration,
+  penultimetaNumeration,
   addDispenserReader,
   updateDispenserReader,
+  getDispenserReaderById,
 };
-
-//todo:
-//todo;
