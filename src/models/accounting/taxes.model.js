@@ -15,7 +15,7 @@ const TaxesSchema = Schema(
 
 TaxesSchema.method("toJSON", function () {
   const { __V, _id, ...object } = this.toObject();
-  object.taxesId = _id;
+  object.taxId = _id;
   return object;
 });
 

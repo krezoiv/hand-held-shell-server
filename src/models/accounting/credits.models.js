@@ -14,7 +14,6 @@ const CreditsSchema = Schema(
       type: Number,
       required: true,
     },
-    creditType: {},
     creditDate: {
       type: Date,
       required: true,

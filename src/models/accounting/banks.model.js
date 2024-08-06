@@ -5,6 +5,10 @@ const BanksSchema = Schema({
     type: String,
     required: true,
   },
+  accountNumber: {
+    type: String,
+    required: true,
+  },
 });
 
 BanksSchema.method(

@@ -23,7 +23,7 @@ const CouponsSchema = Schema(
 
 CouponsSchema.method("toJSON", function () {
   const { __v, _id, ...object } = this.toObject();
-  object.couponsId = _id;
+  object.couponId = _id;
   return object;
 });
 

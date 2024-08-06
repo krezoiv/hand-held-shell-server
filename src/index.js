@@ -34,6 +34,20 @@ app.use(
   require("./routes/fuel-station/general.dispenser.reader.routes")
 );
 
+app.use("/api/sales", require("./routes/sales/sales.control.routes"));
+app.use("/api/bankCheck", require("./routes/accounting/bank.check.routes"));
+app.use("/api/banks", require("./routes/accounting/banks.routes"));
+app.use("/api/bills", require("./routes/accounting/bills.routes"));
+app.use("/api/coupons", require("./routes/accounting/coupons.routes"));
+app.use("/api/credits", require("./routes/accounting/credits.routes"));
+app.use("/api/deposits", require("./routes/accounting/deposits.routes"));
+app.use("/api/pos", require("./routes/accounting/pos.routes"));
+app.use("/api/tax", require("./routes/accounting/taxes.routes"));
+app.use("/api/vales", require("./routes/accounting/vales.routes"));
+app.use("/api/vouchers", require("./routes/accounting/vocuhers.routes"));
+app.use("/api/clients", require("./routes/persons/clients.routes"));
+app.use("/api/stores", require("./routes/persons/stores.routes"));
+
 app.use("/api/fuels", require("./routes/fuel-station/fuels.routes"));
 server.listen(process.env.PORT, (err) => {
   if (err) throw new Error(err);

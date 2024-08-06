@@ -25,7 +25,7 @@ const DepositsSchema = Schema(
 
 DepositsSchema.method("toJSON", function () {
   const { __v, _id, ...object } = this.toObject();
-  object.depositsId = _id;
+  object.depositId = _id;
   return object;
 });
 

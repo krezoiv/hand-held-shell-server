@@ -58,58 +58,71 @@ const salesControlSchema = Schema(
       type: Number,
     },
 
-    billId: {
-      type: Schema.Types.ObjectId,
-      ref: "Bills",
-      required: true,
-    },
+    billIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Bills",
+        required: true,
+      },
+    ],
 
-    valeId: {
-      type: Schema.Types.ObjectId,
-      ref: "Vales",
-      required: true,
-    },
+    valeIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Vales",
+        required: true,
+      },
+    ],
 
-    couponsId: {
-      type: Schema.Types.ObjectId,
-      ref: "Coupons",
-      required: true,
-    },
+    couponsIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Coupons",
+        required: true,
+      },
+    ],
 
-    voucherId: {
-      type: Schema.Types.ObjectId,
-      ref: "Voucher",
-      required: true,
-    },
+    voucherIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Voucher",
+        required: true,
+      },
+    ],
 
-    depositsId: {
-      type: Schema.Types.ObjectId,
-      ref: "Deposits",
-      required: true,
-    },
+    depositsIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Deposits",
+        required: true,
+      },
+    ],
 
-    creditId: {
-      type: Schema.Types.ObjectId,
-      ref: "Credits",
-      required: true,
-    },
+    creditIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Credits",
+        required: true,
+      },
+    ],
 
+    bankCheckIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "BankCheck",
+        required: true,
+      },
+    ],
     abonos: {
       type: Number,
     },
-
-    bankCheckId: {
-      type: Schema.Types.ObjectId,
-      ref: "BankCheck",
-      required: true,
+    userName: {
+      type: String,
     },
 
     generalDispenserReaderId: {
       type: Schema.Types.ObjectId,
       ref: "GeneralDispenserReader",
-    },
-    userName: {
-      type: String,
     },
   },
   { collection: "salesControl" }

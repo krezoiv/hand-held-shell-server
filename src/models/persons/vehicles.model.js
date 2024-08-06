@@ -1,26 +1,22 @@
 /**
  * coleccion para los vehiculos
- */  
+ */
 
-const { Schema, model } = require( 'mongoose' );
+const { Schema, model } = require("mongoose");
 
-const VehiclesSchema = Schema({
-
-    vehicleName : {
-        type : String,
+const VehiclesSchema = Schema(
+  {
+    vehicleName: {
+      type: String,
     },
+  },
+  { collection: "vehicle" }
+);
 
-    driver : {
-        type : String,
-    }
-
-
-}, { collection : 'vehicle' } );
-
-VehiclesSchema.method( 'toJSON', function(){
-    const { __V, _id, ...object } = this.toObject();
-    object.vehicleId = _id;
-    return object;
+VehiclesSchema.method("toJSON", function () {
+  const { __V, _id, ...object } = this.toObject();
+  object.vehicleId = _id;
+  return object;
 });
 
-module.exports = model( 'Vehicle', VehiclesSchema );
+module.exports = model("Vehicle", VehiclesSchema);
