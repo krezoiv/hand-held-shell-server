@@ -33,6 +33,8 @@ app.use(
   "/api/generalDispenserReader",
   require("./routes/fuel-station/general.dispenser.reader.routes")
 );
+
+app.use("/api/fuels", require("./routes/fuel-station/fuels.routes"));
 server.listen(process.env.PORT, (err) => {
   if (err) throw new Error(err);
 

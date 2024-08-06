@@ -1,114 +1,124 @@
+const { Schema, model } = require("mongoose");
 
-const {Schema, model} = require('mongoose');
-
-const salesControlSchema = Schema({
-
-    salesDate : {
-        type : Date,
-       
+const salesControlSchema = Schema(
+  {
+    salesDate: {
+      type: Date,
     },
 
-    noDocument : {
-        type: Number
+    noDocument: {
+      type: Number,
     },
 
-    regularPrice : {
-        type: Number
+    regularPrice: {
+      type: Number,
     },
 
-    superPrice : {
-        type : Number
+    superPrice: {
+      type: Number,
     },
 
-    dieselPrice : {
-        type: Number
+    dieselPrice: {
+      type: Number,
     },
 
-    totalGallonRegular : {
-        type : Number
+    totalGallonRegular: {
+      type: Number,
     },
 
-    totalGallonSuper : {
-        type : Number
+    totalGallonSuper: {
+      type: Number,
     },
 
-    totalGallonDiesel  : {
-        type : Number
+    totalGallonDiesel: {
+      type: Number,
     },
 
-    regularAccumulatedGallons : {
-        type : Number
+    regularAccumulatedGallons: {
+      type: Number,
     },
 
-   
-    superAccumulatedGallons : {
-        type : Number
+    superAccumulatedGallons: {
+      type: Number,
     },
 
-    dieselAccumulatedGallons : {
-        type : Number
+    dieselAccumulatedGallons: {
+      type: Number,
     },
 
-    total : {
-        type: Number
+    total: {
+      type: Number,
     },
-    
+
     balance: {
-        type : Number
+      type: Number,
     },
 
-    totalAbonosBalance : {
-        type : Number
+    totalAbonosBalance: {
+      type: Number,
     },
 
-    bills : {
-        type : Number
+    billId: {
+      type: Schema.Types.ObjectId,
+      ref: "Bills",
+      required: true,
     },
 
-    vales : {
-        type : Number
+    valeId: {
+      type: Schema.Types.ObjectId,
+      ref: "Vales",
+      required: true,
     },
 
-    cupones : {
-        type : Number
+    couponsId: {
+      type: Schema.Types.ObjectId,
+      ref: "Coupons",
+      required: true,
     },
 
-    vouchers : {
-        type : Number
+    voucherId: {
+      type: Schema.Types.ObjectId,
+      ref: "Voucher",
+      required: true,
     },
 
-    deposits : {
-        type : Number
+    depositsId: {
+      type: Schema.Types.ObjectId,
+      ref: "Deposits",
+      required: true,
     },
 
-    depositSlip : {
-        type : Number
+    creditId: {
+      type: Schema.Types.ObjectId,
+      ref: "Credits",
+      required: true,
     },
 
-    credits : {
-        type : Number
+    abonos: {
+      type: Number,
     },
 
-    abonos : {
-        type : Number
+    bankCheckId: {
+      type: Schema.Types.ObjectId,
+      ref: "BankCheck",
+      required: true,
     },
 
-    generalDispenserReaderId : {
-        type : Schema.Types.ObjectId,
-        ref : 'GeneralDispenserReader',
-        
+    generalDispenserReaderId: {
+      type: Schema.Types.ObjectId,
+      ref: "GeneralDispenserReader",
     },
-    userName : {
-        type: String
-    }
+    userName: {
+      type: String,
+    },
+  },
+  { collection: "salesControl" }
+);
 
-
-}, {collection : 'salesControl'});
-
-salesControlSchema.method('toJSON', function(){
-    const {__V, _id, ...object} = this.toObject();
-    object.salesControlId = _id;
-    return object;
+salesControlSchema.method("toJSON", function () {
+  const { __V, _id, ...object } = this.toObject();
+  object.salesControlId = _id;
+  return object;
 });
 
-module.exports = model('SalesContro', salesControlSchema);
+module.exports = model("SalesContro", salesControlSchema);

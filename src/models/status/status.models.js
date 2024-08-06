@@ -1,24 +1,20 @@
 /**
- * 
+ *
  */
-const { Schema, model } = require( 'mongoose' );
+const { Schema, model } = require("mongoose");
 
-const StatusSchema = Schema ({
-    
-    statusName: {
-        type: String,
-        required: true
-    }
+const StatusSchema = Schema({
+  statusName: {
+    type: String,
+    required: true,
+  },
 });
 
-StatusSchema.method( 'toJSON', function() {
+StatusSchema.method("toJSON", function () {
+  const { __V, _id, ...object } = this.toObject();
+  object.statusId = _id;
 
-    const {__V, _id, ...object } = this.toObject();
-    object.statusId = _id;
-   
-    return object;
-
+  return object;
 });
 
-
-module.exports = model('Status', StatusSchema);
+module.exports = model("Status", StatusSchema);
