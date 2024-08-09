@@ -21,7 +21,7 @@ const VoucherSchema = Schema(
       required: true,
     },
 
-    Date: {
+    voucherDate: {
       type: Date,
       required: true,
     },

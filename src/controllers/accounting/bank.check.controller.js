@@ -3,13 +3,13 @@ const BankCheck = require("../../models/accounting/bank.check.model"); // Asegú
 
 const createBankCheck = async (req, res = response) => {
   try {
-    const { checkNumber, amount, date, bankId, clientId } = req.body;
+    const { checkNumber, amount, checkDate, bankId, clientId } = req.body;
 
     // Crear una nueva instancia de BankCheck
     const newBankCheck = new BankCheck({
       checkNumber,
       amount,
-      date,
+      checkDate,
       bankId,
       clientId,
     });

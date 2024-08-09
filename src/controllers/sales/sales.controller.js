@@ -1,5 +1,5 @@
 const { response } = require("express");
-const SalesControl = require("../models/sales/salesControl.model"); // Asegúrate de que la ruta sea correcta
+const SalesControl = require("../../models/sales/salesControl.model"); // Asegúrate de que la ruta sea correcta
 
 const createSalesControl = async (req, res = response) => {
   try {

@@ -50,12 +50,14 @@ const getAllClients = async (req, res = response) => {
     res.json({
       ok: true,
       clients,
+      message: "Clientes obtenidos correctamente",
     });
   } catch (error) {
     console.error("Error al obtener clientes:", error);
     res.status(500).json({
       ok: false,
       msg: "Por favor, contacte al administrador.",
+      message: "Hubo un problema al obtener la lista de bancos", // Agrega un mensaje de error
       error: error.message,
     });
   }

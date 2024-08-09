@@ -43,12 +43,14 @@ const getAllBanks = async (req, res = response) => {
     res.json({
       ok: true,
       banks,
+      message: "Bancos obtenidos correctamente", // Agrega un mensaje de éxito
     });
   } catch (error) {
     console.error("Error al obtener bancos:", error);
     res.status(500).json({
       ok: false,
       msg: "Por favor, contacte al administrador.",
+      message: "Hubo un problema al obtener la lista de bancos", // Agrega un mensaje de error
       error: error.message,
     });
   }

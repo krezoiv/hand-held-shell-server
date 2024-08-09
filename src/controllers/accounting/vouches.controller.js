@@ -4,7 +4,8 @@ const Voucher = require("../../models/accounting/vouchers.model"); // Asegúrate
 // Crear un nuevo voucher
 const createVoucher = async (req, res = response) => {
   try {
-    const { applied, authorizationCode, posId, voucherAmount, Date } = req.body;
+    const { applied, authorizationCode, posId, voucherAmount, voucherDate } =
+      req.body;
 
     // Verificar si ya existe un voucher con el mismo código de autorización
     const existingVoucher = await Voucher.findOne({ authorizationCode });
@@ -21,7 +22,7 @@ const createVoucher = async (req, res = response) => {
       authorizationCode,
       posId,
       voucherAmount,
-      Date,
+      voucherDate,
     });
 
     // Guardar en la base de datos
@@ -94,7 +95,8 @@ const getVoucherById = async (req, res = response) => {
 const updateVoucher = async (req, res = response) => {
   try {
     const voucherId = req.params.id;
-    const { applied, authorizationCode, posId, voucherAmount, Date } = req.body;
+    const { applied, authorizationCode, posId, voucherAmount, voucherDate } =
+      req.body;
 
     const voucher = await Voucher.findById(voucherId);
 
@@ -123,7 +125,7 @@ const updateVoucher = async (req, res = response) => {
     voucher.authorizationCode = authorizationCode;
     voucher.posId = posId;
     voucher.voucherAmount = voucherAmount;
-    voucher.Date = Date;
+    voucher.voucherDate = voucherDate;
 
     const updatedVoucher = await voucher.save();
 

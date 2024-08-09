@@ -18,6 +18,10 @@ const BankCheckSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "Banks",
     },
+    clientId: {
+      type: Schema.Types.ObjectId,
+      ref: "Clients",
+    },
     applied: {
       type: Boolean,
     },

@@ -6,6 +6,6 @@ const {
 
 const router = Router();
 
-router.post("/newBankCheck", validateJWT, createBankCheck);
+router.post("/createBankCheck", validateJWT, createBankCheck);
 
 module.exports = router;

@@ -20,7 +20,7 @@ const DepositsSchema = Schema(
       required: true,
     },
   },
-  { collection: "dispenserReaders" }
+  { collection: "deposits" }
 );
 
 DepositsSchema.method("toJSON", function () {
