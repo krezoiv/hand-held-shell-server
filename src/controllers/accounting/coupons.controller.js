@@ -1,26 +1,39 @@
 const { response } = require("express");
 const Coupon = require("../../models/accounting/coupons.model"); // Asegúrate de que la ruta sea correcta
+const SalesControl = require("../../models/sales/salesControl.model");
 
-// Crear un nuevo cupón
 const createCoupon = async (req, res = response) => {
   try {
-    const { applied, cuponesNumber, cuponesDate, cuponesAmount } = req.body;
+    const { cuponesNumber, cuponesDate, cuponesAmount } = req.body;
 
     // Verificar si ya existe un cupón con el mismo número
     const existingCoupon = await Coupon.findOne({ cuponesNumber });
     if (existingCoupon) {
       return res.status(400).json({
         ok: false,
-        msg: "Ya existe un cupón con este número",
+        message: "Ya existe un cupón con este número",
       });
     }
 
-    // Crear una nueva instancia de Coupon
+    // Buscar el último SalesControl
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(400).json({
+        ok: false,
+        message: "No se encontró un SalesControl para asignar al cupón",
+      });
+    }
+
+    // Crear una nueva instancia de Coupon con applied por defecto en false
     const newCoupon = new Coupon({
-      applied,
+      applied: false, // Valor por defecto
       cuponesNumber,
       cuponesDate,
       cuponesAmount,
+      salesControlId: lastSalesControl._id, // Asignar el último salesControlId
     });
 
     // Guardar en la base de datos
@@ -28,14 +41,14 @@ const createCoupon = async (req, res = response) => {
 
     res.status(201).json({
       ok: true,
-      msg: "Cupón creado exitosamente",
+      message: "Cupón creado exitosamente en la db",
       coupon: savedCoupon,
     });
   } catch (error) {
     console.error("Error al crear cupón:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }

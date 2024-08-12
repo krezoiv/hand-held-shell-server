@@ -6,7 +6,7 @@ const CouponsSchema = Schema(
       type: Boolean,
     },
     cuponesNumber: {
-      type: Number,
+      type: String,
       required: true,
     },
     cuponesDate: {
@@ -17,7 +17,12 @@ const CouponsSchema = Schema(
       type: Number,
       required: true,
     },
+    salesControlId: {
+      type: Schema.Types.ObjectId,
+      ref: "SalesControl",
+    },
   },
+
   { collection: "coupons" }
 );
 

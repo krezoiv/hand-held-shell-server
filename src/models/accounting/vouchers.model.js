@@ -7,7 +7,7 @@ const VoucherSchema = Schema(
     },
 
     authorizationCode: {
-      type: Number,
+      type: String,
       required: true,
     },
 
@@ -24,6 +24,10 @@ const VoucherSchema = Schema(
     voucherDate: {
       type: Date,
       required: true,
+    },
+    salesControlId: {
+      type: Schema.Types.ObjectId,
+      ref: "SalesControl",
     },
   },
   { collection: "voucher" }

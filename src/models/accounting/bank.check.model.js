@@ -2,6 +2,9 @@ const { Schema, model, Collection } = require("mongoose");
 
 const BankCheckSchema = Schema(
   {
+    applied: {
+      type: Boolean,
+    },
     checkNumber: {
       type: Number,
       require: true,
@@ -22,8 +25,10 @@ const BankCheckSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "Clients",
     },
-    applied: {
-      type: Boolean,
+
+    salesControlId: {
+      type: Schema.Types.ObjectId,
+      ref: "SalesControl",
     },
   },
   { collection: "bankCheck" }

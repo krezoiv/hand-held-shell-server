@@ -1,5 +1,6 @@
 const { response } = require("express");
 const Deposit = require("../../models/accounting/deposits.model"); // Asegúrate de que la ruta sea correcta
+const SalesControl = require("../../models/sales/salesControl.model");
 
 // Crear un nuevo depósito
 const createDeposit = async (req, res = response) => {
@@ -11,7 +12,19 @@ const createDeposit = async (req, res = response) => {
     if (existingDeposit) {
       return res.status(400).json({
         ok: false,
-        msg: "Ya existe un depósito con este número",
+        message: "Ya existe un depósito con este número",
+      });
+    }
+
+    // Buscar el último SalesControl
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(400).json({
+        ok: false,
+        message: "No se encontró un SalesControl para asignar al depósito",
       });
     }
 
@@ -21,6 +34,7 @@ const createDeposit = async (req, res = response) => {
       depositAmount,
       depositDate,
       bankId,
+      salesControlId: lastSalesControl._id, // Asignar el último salesControlId
     });
 
     // Guardar en la base de datos
@@ -31,14 +45,14 @@ const createDeposit = async (req, res = response) => {
 
     res.status(201).json({
       ok: true,
-      msg: "Depósito creado exitosamente",
+      message: "Depósito creado exitosamente",
       deposit: savedDeposit,
     });
   } catch (error) {
     console.error("Error al crear depósito:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -56,7 +70,7 @@ const getAllDeposits = async (req, res = response) => {
     console.error("Error al obtener depósitos:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -71,7 +85,7 @@ const getDepositById = async (req, res = response) => {
     if (!deposit) {
       return res.status(404).json({
         ok: false,
-        msg: "Depósito no encontrado",
+        message: "Depósito no encontrado",
       });
     }
 
@@ -83,7 +97,7 @@ const getDepositById = async (req, res = response) => {
     console.error("Error al obtener depósito:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -100,7 +114,7 @@ const updateDeposit = async (req, res = response) => {
     if (!deposit) {
       return res.status(404).json({
         ok: false,
-        msg: "Depósito no encontrado",
+        message: "Depósito no encontrado",
       });
     }
 
@@ -113,7 +127,7 @@ const updateDeposit = async (req, res = response) => {
       if (existingDeposit) {
         return res.status(400).json({
           ok: false,
-          msg: "Ya existe otro depósito con este número",
+          message: "Ya existe otro depósito con este número",
         });
       }
     }
@@ -130,14 +144,14 @@ const updateDeposit = async (req, res = response) => {
 
     res.json({
       ok: true,
-      msg: "Depósito actualizado exitosamente",
+      message: "Depósito actualizado exitosamente",
       deposit: updatedDeposit,
     });
   } catch (error) {
     console.error("Error al actualizar depósito:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -153,7 +167,7 @@ const deleteDeposit = async (req, res = response) => {
     if (!deposit) {
       return res.status(404).json({
         ok: false,
-        msg: "Depósito no encontrado",
+        message: "Depósito no encontrado",
       });
     }
 
@@ -161,13 +175,13 @@ const deleteDeposit = async (req, res = response) => {
 
     res.json({
       ok: true,
-      msg: "Depósito eliminado exitosamente",
+      message: "Depósito eliminado exitosamente",
     });
   } catch (error) {
     console.error("Error al eliminar depósito:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }

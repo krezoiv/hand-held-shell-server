@@ -1,28 +1,41 @@
 const { response } = require("express");
-const Credit = require("../../models/accounting/credits.models"); // Asegúrate de que la ruta sea correcta
+const Credit = require("../../models/accounting/credits.models");
+const SalesControl = require("../../models/sales/salesControl.model");
 
 // Crear un nuevo crédito
 const createCredit = async (req, res = response) => {
   try {
-    const { applied, creditNumber, creditAmount, creditDate, clientId } =
-      req.body;
+    const { creditNumber, creditAmount, creditDate, clientId } = req.body;
 
     // Verificar si ya existe un crédito con el mismo número
     const existingCredit = await Credit.findOne({ creditNumber });
     if (existingCredit) {
       return res.status(400).json({
         ok: false,
-        msg: "Ya existe un crédito con este número",
+        message: "Ya existe un crédito con este número",
       });
     }
 
-    // Crear una nueva instancia de Credit
+    // Buscar el último SalesControl
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(400).json({
+        ok: false,
+        messge: "No se encontró un SalesControl para asignar al crédito",
+      });
+    }
+
+    // Crear una nueva instancia de Credit con applied por defecto en false
     const newCredit = new Credit({
-      applied,
+      applied: false, // Valor por defecto
       creditNumber,
       creditAmount,
       creditDate,
       clientId,
+      salesControlId: lastSalesControl._id, // Asignar el último salesControlId
     });
 
     // Guardar en la base de datos
@@ -33,14 +46,14 @@ const createCredit = async (req, res = response) => {
 
     res.status(201).json({
       ok: true,
-      msg: "Crédito creado exitosamente",
+      message: "Crédito creado exitosamente",
       credit: savedCredit,
     });
   } catch (error) {
     console.error("Error al crear crédito:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -58,7 +71,7 @@ const getAllCredits = async (req, res = response) => {
     console.error("Error al obtener créditos:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -73,7 +86,7 @@ const getCreditById = async (req, res = response) => {
     if (!credit) {
       return res.status(404).json({
         ok: false,
-        msg: "Crédito no encontrado",
+        message: "Crédito no encontrado",
       });
     }
 
@@ -85,7 +98,7 @@ const getCreditById = async (req, res = response) => {
     console.error("Error al obtener crédito:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -103,7 +116,7 @@ const updateCredit = async (req, res = response) => {
     if (!credit) {
       return res.status(404).json({
         ok: false,
-        msg: "Crédito no encontrado",
+        message: "Crédito no encontrado",
       });
     }
 
@@ -116,7 +129,7 @@ const updateCredit = async (req, res = response) => {
       if (existingCredit) {
         return res.status(400).json({
           ok: false,
-          msg: "Ya existe otro crédito con este número",
+          message: "Ya existe otro crédito con este número",
         });
       }
     }
@@ -134,14 +147,14 @@ const updateCredit = async (req, res = response) => {
 
     res.json({
       ok: true,
-      msg: "Crédito actualizado exitosamente",
+      message: "Crédito actualizado exitosamente",
       credit: updatedCredit,
     });
   } catch (error) {
     console.error("Error al actualizar crédito:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -157,7 +170,7 @@ const deleteCredit = async (req, res = response) => {
     if (!credit) {
       return res.status(404).json({
         ok: false,
-        msg: "Crédito no encontrado",
+        message: "Crédito no encontrado",
       });
     }
 
@@ -165,13 +178,13 @@ const deleteCredit = async (req, res = response) => {
 
     res.json({
       ok: true,
-      msg: "Crédito eliminado exitosamente",
+      message: "Crédito eliminado exitosamente",
     });
   } catch (error) {
     console.error("Error al eliminar crédito:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }

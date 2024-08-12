@@ -1,5 +1,6 @@
 const { response } = require("express");
 const Bill = require("../../models/accounting/bills.model"); // Asegúrate de que la ruta sea correcta
+const SalesControl = require("../../models/sales/salesControl.model");
 
 // Crear una nueva factura
 const createBill = async (req, res = response) => {
@@ -11,16 +12,29 @@ const createBill = async (req, res = response) => {
     if (existingBill) {
       return res.status(400).json({
         ok: false,
-        msg: "Ya existe una factura con este número",
+        message: "Ya existe una factura con este número",
       });
     }
 
-    // Crear una nueva instancia de Bill
+    // Buscar el último registro de SalesControl
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(404).json({
+        ok: false,
+        message: "No se encontró un registro de SalesControl.",
+      });
+    }
+
+    // Crear una nueva instancia de Bill con el salesControlId del último SalesControl
     const newBill = new Bill({
       billNumber,
       billDate,
       billAmount,
       billDescription,
+      salesControlId: lastSalesControl._id,
     });
 
     // Guardar en la base de datos
@@ -28,14 +42,14 @@ const createBill = async (req, res = response) => {
 
     res.status(201).json({
       ok: true,
-      msg: "Factura creada exitosamente",
+      message: "Factura creada exitosamente",
       bill: savedBill,
     });
   } catch (error) {
     console.error("Error al crear factura:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -53,7 +67,7 @@ const getAllBills = async (req, res = response) => {
     console.error("Error al obtener facturas:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -68,7 +82,7 @@ const getBillById = async (req, res = response) => {
     if (!bill) {
       return res.status(404).json({
         ok: false,
-        msg: "Factura no encontrada",
+        message: "Factura no encontrada",
       });
     }
 
@@ -80,7 +94,7 @@ const getBillById = async (req, res = response) => {
     console.error("Error al obtener factura:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -97,7 +111,7 @@ const updateBill = async (req, res = response) => {
     if (!bill) {
       return res.status(404).json({
         ok: false,
-        msg: "Factura no encontrada",
+        message: "Factura no encontrada",
       });
     }
 
@@ -110,7 +124,7 @@ const updateBill = async (req, res = response) => {
       if (existingBill) {
         return res.status(400).json({
           ok: false,
-          msg: "Ya existe otra factura con este número",
+          message: "Ya existe otra factura con este número",
         });
       }
     }
@@ -124,14 +138,14 @@ const updateBill = async (req, res = response) => {
 
     res.json({
       ok: true,
-      msg: "Factura actualizada exitosamente",
+      message: "Factura actualizada exitosamente",
       bill: updatedBill,
     });
   } catch (error) {
     console.error("Error al actualizar factura:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -147,7 +161,7 @@ const deleteBill = async (req, res = response) => {
     if (!bill) {
       return res.status(404).json({
         ok: false,
-        msg: "Factura no encontrada",
+        message: "Factura no encontrada",
       });
     }
 
@@ -155,13 +169,13 @@ const deleteBill = async (req, res = response) => {
 
     res.json({
       ok: true,
-      msg: "Factura eliminada exitosamente",
+      message: "Factura eliminada exitosamente",
     });
   } catch (error) {
     console.error("Error al eliminar factura:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }

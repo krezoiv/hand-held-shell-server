@@ -134,4 +134,4 @@ salesControlSchema.method("toJSON", function () {
   return object;
 });
 
-module.exports = model("SalesContro", salesControlSchema);
+module.exports = model("SalesControl", salesControlSchema);

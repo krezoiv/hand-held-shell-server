@@ -18,6 +18,10 @@ const BillsSchema = Schema(
       type: String,
       required: true,
     },
+    salesControlId: {
+      type: Schema.Types.ObjectId,
+      ref: "SalesControl",
+    },
   },
   { collection: "bills" }
 );

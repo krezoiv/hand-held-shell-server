@@ -19,6 +19,10 @@ const DepositsSchema = Schema(
       ref: "Banks",
       required: true,
     },
+    salesControlId: {
+      type: Schema.Types.ObjectId,
+      ref: "SalesControl",
+    },
   },
   { collection: "deposits" }
 );

@@ -1,28 +1,41 @@
 const { response } = require("express");
 const Voucher = require("../../models/accounting/vouchers.model"); // Asegúrate de que la ruta sea correcta
+const SalesControl = require("../../models/sales/salesControl.model");
 
 // Crear un nuevo voucher
 const createVoucher = async (req, res = response) => {
   try {
-    const { applied, authorizationCode, posId, voucherAmount, voucherDate } =
-      req.body;
+    const { authorizationCode, posId, voucherAmount, voucherDate } = req.body;
 
     // Verificar si ya existe un voucher con el mismo código de autorización
     const existingVoucher = await Voucher.findOne({ authorizationCode });
     if (existingVoucher) {
       return res.status(400).json({
         ok: false,
-        msg: "Ya existe un voucher con este código de autorización",
+        message: "Ya existe un voucher con este código de autorización",
+      });
+    }
+
+    // Buscar el último SalesControl
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(400).json({
+        ok: false,
+        message: "No se encontró un SalesControl para asignar al voucher",
       });
     }
 
     // Crear una nueva instancia de Voucher
     const newVoucher = new Voucher({
-      applied,
+      applied: false, // Establecer el valor por defecto de applied en false
       authorizationCode,
       posId,
       voucherAmount,
       voucherDate,
+      salesControlId: lastSalesControl._id, // Asignar el último salesControlId
     });
 
     // Guardar en la base de datos
@@ -33,14 +46,14 @@ const createVoucher = async (req, res = response) => {
 
     res.status(201).json({
       ok: true,
-      msg: "Voucher creado exitosamente",
+      message: "Voucher creado exitosamente",
       voucher: savedVoucher,
     });
   } catch (error) {
     console.error("Error al crear voucher:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -58,7 +71,7 @@ const getAllVouchers = async (req, res = response) => {
     console.error("Error al obtener vouchers:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -73,7 +86,7 @@ const getVoucherById = async (req, res = response) => {
     if (!voucher) {
       return res.status(404).json({
         ok: false,
-        msg: "Voucher no encontrado",
+        message: "Voucher no encontrado",
       });
     }
 
@@ -85,7 +98,7 @@ const getVoucherById = async (req, res = response) => {
     console.error("Error al obtener voucher:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -103,7 +116,7 @@ const updateVoucher = async (req, res = response) => {
     if (!voucher) {
       return res.status(404).json({
         ok: false,
-        msg: "Voucher no encontrado",
+        message: "Voucher no encontrado",
       });
     }
 
@@ -116,7 +129,7 @@ const updateVoucher = async (req, res = response) => {
       if (existingVoucher) {
         return res.status(400).json({
           ok: false,
-          msg: "Ya existe otro voucher con este código de autorización",
+          message: "Ya existe otro voucher con este código de autorización",
         });
       }
     }
@@ -134,14 +147,14 @@ const updateVoucher = async (req, res = response) => {
 
     res.json({
       ok: true,
-      msg: "Voucher actualizado exitosamente",
+      message: "Voucher actualizado exitosamente",
       voucher: updatedVoucher,
     });
   } catch (error) {
     console.error("Error al actualizar voucher:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -157,7 +170,7 @@ const deleteVoucher = async (req, res = response) => {
     if (!voucher) {
       return res.status(404).json({
         ok: false,
-        msg: "Voucher no encontrado",
+        message: "Voucher no encontrado",
       });
     }
 
@@ -165,13 +178,13 @@ const deleteVoucher = async (req, res = response) => {
 
     res.json({
       ok: true,
-      msg: "Voucher eliminado exitosamente",
+      message: "Voucher eliminado exitosamente",
     });
   } catch (error) {
     console.error("Error al eliminar voucher:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }

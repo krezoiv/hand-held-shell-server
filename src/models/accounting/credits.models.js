@@ -23,6 +23,10 @@ const CreditsSchema = Schema(
       ref: "Clients",
       required: true,
     },
+    salesControlId: {
+      type: Schema.Types.ObjectId,
+      ref: "SalesControl",
+    },
   },
   { collection: "credits" }
 );

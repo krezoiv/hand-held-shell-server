@@ -1,17 +1,30 @@
 const { response } = require("express");
 const Vale = require("../../models/accounting/vales.model"); // Asegúrate de que la ruta sea correcta
+const SalesControl = require("../../models/sales/salesControl.model");
 
 // Crear un nuevo vale
 const createVale = async (req, res = response) => {
   try {
-    const { valeNumber, valeDate, valeAmount } = req.body;
+    const { valeNumber, valeDate, valeAmount, valeDescription } = req.body;
 
     // Verificar si ya existe un vale con el mismo número
     const existingVale = await Vale.findOne({ valeNumber });
     if (existingVale) {
       return res.status(400).json({
         ok: false,
-        msg: "Ya existe un vale con este número",
+        message: "Ya existe un vale con este número",
+      });
+    }
+
+    // Buscar el último SalesControl
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(400).json({
+        ok: false,
+        message: "No se encontró un SalesControl para asignar al vale",
       });
     }
 
@@ -20,6 +33,8 @@ const createVale = async (req, res = response) => {
       valeNumber,
       valeDate,
       valeAmount,
+      valeDescription,
+      salesControlId: lastSalesControl._id, // Asignar el último salesControlId
     });
 
     // Guardar en la base de datos
@@ -27,14 +42,14 @@ const createVale = async (req, res = response) => {
 
     res.status(201).json({
       ok: true,
-      msg: "Vale creado exitosamente",
+      message: "Vale creado exitosamente",
       vale: savedVale,
     });
   } catch (error) {
     console.error("Error al crear vale:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -52,7 +67,7 @@ const getAllVales = async (req, res = response) => {
     console.error("Error al obtener vales:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -67,7 +82,7 @@ const getValeById = async (req, res = response) => {
     if (!vale) {
       return res.status(404).json({
         ok: false,
-        msg: "Vale no encontrado",
+        message: "Vale no encontrado",
       });
     }
 
@@ -79,7 +94,7 @@ const getValeById = async (req, res = response) => {
     console.error("Error al obtener vale:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -89,14 +104,14 @@ const getValeById = async (req, res = response) => {
 const updateVale = async (req, res = response) => {
   try {
     const valeId = req.params.id;
-    const { valeNumber, valeDate, valeAmount } = req.body;
+    const { valeNumber, valeDate, valeAmount, valeDescription } = req.body;
 
     const vale = await Vale.findById(valeId);
 
     if (!vale) {
       return res.status(404).json({
         ok: false,
-        msg: "Vale no encontrado",
+        message: "Vale no encontrado",
       });
     }
 
@@ -109,7 +124,7 @@ const updateVale = async (req, res = response) => {
       if (existingVale) {
         return res.status(400).json({
           ok: false,
-          msg: "Ya existe otro vale con este número",
+          message: "Ya existe otro vale con este número",
         });
       }
     }
@@ -117,19 +132,20 @@ const updateVale = async (req, res = response) => {
     vale.valeNumber = valeNumber;
     vale.valeDate = valeDate;
     vale.valeAmount = valeAmount;
+    vale.valeDescription = valeDescription;
 
     const updatedVale = await vale.save();
 
     res.json({
       ok: true,
-      msg: "Vale actualizado exitosamente",
+      message: "Vale actualizado exitosamente",
       vale: updatedVale,
     });
   } catch (error) {
     console.error("Error al actualizar vale:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }
@@ -145,7 +161,7 @@ const deleteVale = async (req, res = response) => {
     if (!vale) {
       return res.status(404).json({
         ok: false,
-        msg: "Vale no encontrado",
+        message: "Vale no encontrado",
       });
     }
 
@@ -153,13 +169,13 @@ const deleteVale = async (req, res = response) => {
 
     res.json({
       ok: true,
-      msg: "Vale eliminado exitosamente",
+      message: "Vale eliminado exitosamente",
     });
   } catch (error) {
     console.error("Error al eliminar vale:", error);
     res.status(500).json({
       ok: false,
-      msg: "Por favor, contacte al administrador.",
+      message: "Por favor, contacte al administrador.",
       error: error.message,
     });
   }

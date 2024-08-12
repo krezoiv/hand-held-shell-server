@@ -3,7 +3,7 @@ const { Schema, model } = require("mongoose");
 const ValesSchema = Schema(
   {
     valeNumber: {
-      type: Number,
+      type: String,
       required: true,
     },
     valeDate: {
@@ -13,6 +13,14 @@ const ValesSchema = Schema(
     valeAmount: {
       type: Number,
       required: true,
+    },
+    valeDescription: {
+      type: String,
+      required: true,
+    },
+    salesControlId: {
+      type: Schema.Types.ObjectId,
+      ref: "SalesControl",
     },
   },
   { collection: "vales" }
