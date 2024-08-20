@@ -2,6 +2,10 @@ const { Schema, model } = require("mongoose");
 
 const salesControlSchema = Schema(
   {
+    applied: {
+      type: Boolean,
+    },
+
     salesDate: {
       type: Date,
     },

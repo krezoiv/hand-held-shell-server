@@ -6,6 +6,7 @@ const {
   getBillById,
   updateBill,
   deleteBill,
+  getBillsSalesControl,
 } = require("../../controllers/accounting/bills.controller");
 
 const router = Router();
@@ -15,5 +16,6 @@ router.get("/getAllbills", validateJWT, getAllBills);
 router.get("/getbBillById/:billId", validateJWT, getBillById);
 router.put("/updateBill/:billId", validateJWT, updateBill);
 router.delete("/deleteBill/:billId", validateJWT, deleteBill);
+router.get("/getBillsSalesControl", validateJWT, getBillsSalesControl);
 
 module.exports = router;

@@ -1,9 +1,11 @@
 const { response } = require("express");
 const GeneralDispenserReader = require("../../models/fuel-station/general.dispenser.reader.models");
 const AssignmentHose = require("../../models/fuel-station/assignment.hose.model");
+const SalesControl = require("../../models/sales/salesControl.model");
+
 const createGeneralDispenserReader = async (req, res = response) => {
   try {
-    // Buscar el último registro en la base de datos
+    // Buscar el último registro en GeneralDispenserReader
     const lastReader = await GeneralDispenserReader.findOne().sort({
       readingDate: -1,
     });
@@ -14,6 +16,17 @@ const createGeneralDispenserReader = async (req, res = response) => {
         ok: false,
         msg: "El día anterior no se ha cerrado",
       });
+    }
+
+    // Buscar el último registro en SalesControl
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    // Si existe un SalesControl, actualizar su campo 'applied' a true
+    if (lastSalesControl) {
+      lastSalesControl.applied = true;
+      await lastSalesControl.save();
     }
 
     // Obtener la fecha y hora actual en Guatemala
@@ -31,7 +44,7 @@ const createGeneralDispenserReader = async (req, res = response) => {
       newReadingDate = readingDate;
     }
 
-    // Crear un nuevo registro
+    // Crear un nuevo registro en GeneralDispenserReader
     const newReader = new GeneralDispenserReader({
       applied: false,
       totalGallonRegular: 0,

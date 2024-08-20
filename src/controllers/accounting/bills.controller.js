@@ -73,6 +73,37 @@ const getAllBills = async (req, res = response) => {
   }
 };
 
+const getBillsSalesControl = async (req, res = response) => {
+  try {
+    // Buscar el último registro de SalesControl
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(404).json({
+        ok: false,
+        message: "No se encontró un registro de SalesControl.",
+      });
+    }
+
+    // Obtener todas las facturas relacionadas con el último SalesControl
+    const bills = await Bill.find({ salesControlId: lastSalesControl._id });
+
+    res.json({
+      ok: true,
+      bills,
+    });
+  } catch (error) {
+    console.error("Error al obtener facturas:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Por favor, contacte al administrador.",
+      error: error.message,
+    });
+  }
+};
+
 // Obtener una factura por ID
 const getBillById = async (req, res = response) => {
   try {
@@ -154,7 +185,7 @@ const updateBill = async (req, res = response) => {
 // Eliminar una factura
 const deleteBill = async (req, res = response) => {
   try {
-    const billId = req.params.id;
+    const billId = req.params.billId;
 
     const bill = await Bill.findById(billId);
 
@@ -169,10 +200,11 @@ const deleteBill = async (req, res = response) => {
 
     res.json({
       ok: true,
-      message: "Factura eliminada exitosamente",
+      bill: bill,
+      message: "Gasto eliminada exitosamente",
     });
   } catch (error) {
-    console.error("Error al eliminar factura:", error);
+    console.error("Error al eliminar gasto:", error);
     res.status(500).json({
       ok: false,
       message: "Por favor, contacte al administrador.",
@@ -187,4 +219,5 @@ module.exports = {
   getBillById,
   updateBill,
   deleteBill,
+  getBillsSalesControl,
 };

@@ -5,7 +5,15 @@ const SalesControl = require("../../models/sales/salesControl.model");
 // Crear un nuevo crédito
 const createCredit = async (req, res = response) => {
   try {
-    const { creditNumber, creditAmount, creditDate, clientId } = req.body;
+    const {
+      creditNumber,
+      creditAmount,
+      creditDate,
+      regularAmount,
+      superAmount,
+      dieselAmount,
+      clientId,
+    } = req.body;
 
     // Verificar si ya existe un crédito con el mismo número
     const existingCredit = await Credit.findOne({ creditNumber });
@@ -35,6 +43,9 @@ const createCredit = async (req, res = response) => {
       creditAmount,
       creditDate,
       clientId,
+      regularAmount,
+      superAmount,
+      dieselAmount,
       salesControlId: lastSalesControl._id, // Asignar el último salesControlId
     });
 
@@ -63,6 +74,36 @@ const createCredit = async (req, res = response) => {
 const getAllCredits = async (req, res = response) => {
   try {
     const credits = await Credit.find().populate("clientId");
+    res.json({
+      ok: true,
+      credits,
+    });
+  } catch (error) {
+    console.error("Error al obtener créditos:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Por favor, contacte al administrador.",
+      error: error.message,
+    });
+  }
+};
+
+const getCreditsSalesControl = async (req, res = response) => {
+  try {
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(404).json({
+        ok: false,
+        message: "No se encontró un registro de SalesControl.",
+      });
+    }
+
+    const credits = await Credit.find({
+      salesControlId: lastSalesControl._id,
+    }).populate("clientId");
     res.json({
       ok: true,
       credits,
@@ -108,8 +149,16 @@ const getCreditById = async (req, res = response) => {
 const updateCredit = async (req, res = response) => {
   try {
     const creditId = req.params.id;
-    const { applied, creditNumber, creditAmount, creditDate, clientId } =
-      req.body;
+    const {
+      applied,
+      creditNumber,
+      creditAmount,
+      creditDate,
+      regularAmount,
+      superAmount,
+      dieselAmount,
+      clientId,
+    } = req.body;
 
     const credit = await Credit.findById(creditId);
 
@@ -138,6 +187,9 @@ const updateCredit = async (req, res = response) => {
     credit.creditNumber = creditNumber;
     credit.creditAmount = creditAmount;
     credit.creditDate = creditDate;
+    credit.regularAmount = regularAmount;
+    credit.superAmount = superAmount;
+    credit.dieselAmount = dieselAmount;
     credit.clientId = clientId;
 
     const updatedCredit = await credit.save();
@@ -163,7 +215,7 @@ const updateCredit = async (req, res = response) => {
 // Eliminar un crédito
 const deleteCredit = async (req, res = response) => {
   try {
-    const creditId = req.params.id;
+    const creditId = req.params.creditId;
 
     const credit = await Credit.findById(creditId);
 
@@ -178,6 +230,7 @@ const deleteCredit = async (req, res = response) => {
 
     res.json({
       ok: true,
+      credit: credit,
       message: "Crédito eliminado exitosamente",
     });
   } catch (error) {
@@ -196,4 +249,5 @@ module.exports = {
   getCreditById,
   updateCredit,
   deleteCredit,
+  getCreditsSalesControl,
 };

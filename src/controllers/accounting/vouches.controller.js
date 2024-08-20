@@ -77,6 +77,36 @@ const getAllVouchers = async (req, res = response) => {
   }
 };
 
+const getVouchersSaleControl = async (req, res = response) => {
+  try {
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(404).json({
+        ok: false,
+        message: "No se encontró un registro de SalesControl.",
+      });
+    }
+    const vouchers = await Voucher.find({
+      salesControlId: lastSalesControl._id,
+    }).populate("posId");
+
+    res.json({
+      ok: true,
+      vouchers,
+    });
+  } catch (error) {
+    console.error("Error al obtener vouchers:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Por favor, contacte al administrador.",
+      error: error.message,
+    });
+  }
+};
+
 // Obtener un voucher por ID
 const getVoucherById = async (req, res = response) => {
   try {
@@ -163,7 +193,7 @@ const updateVoucher = async (req, res = response) => {
 // Eliminar un voucher
 const deleteVoucher = async (req, res = response) => {
   try {
-    const voucherId = req.params.id;
+    const voucherId = req.params.voucherId;
 
     const voucher = await Voucher.findById(voucherId);
 
@@ -178,6 +208,7 @@ const deleteVoucher = async (req, res = response) => {
 
     res.json({
       ok: true,
+      voucher: voucher,
       message: "Voucher eliminado exitosamente",
     });
   } catch (error) {
@@ -196,4 +227,5 @@ module.exports = {
   getVoucherById,
   updateVoucher,
   deleteVoucher,
+  getVouchersSaleControl,
 };

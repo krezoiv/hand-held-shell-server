@@ -18,6 +18,19 @@ const CreditsSchema = Schema(
       type: Date,
       required: true,
     },
+    regularAmount: {
+      type: Number,
+      required: true,
+    },
+    superAmount: {
+      type: Number,
+      required: true,
+    },
+    dieselAmount: {
+      type: Number,
+      required: true,
+    },
+
     clientId: {
       type: Schema.Types.ObjectId,
       ref: "Clients",

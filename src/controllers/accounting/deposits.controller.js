@@ -76,6 +76,36 @@ const getAllDeposits = async (req, res = response) => {
   }
 };
 
+const getDepositsSaleControl = async (req, res = response) => {
+  try {
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(404).json({
+        ok: false,
+        message: "No se encontró un registro de SalesControl.",
+      });
+    }
+
+    const deposits = await Deposit.find({
+      salesControlId: lastSalesControl._id,
+    }).populate("bankId");
+    res.json({
+      ok: true,
+      deposits,
+    });
+  } catch (error) {
+    console.error("Error al obtener depósitos:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Por favor, contacte al administrador.",
+      error: error.message,
+    });
+  }
+};
+
 // Obtener un depósito por ID
 const getDepositById = async (req, res = response) => {
   try {
@@ -160,7 +190,7 @@ const updateDeposit = async (req, res = response) => {
 // Eliminar un depósito
 const deleteDeposit = async (req, res = response) => {
   try {
-    const depositId = req.params.id;
+    const depositId = req.params.depositId;
 
     const deposit = await Deposit.findById(depositId);
 
@@ -175,6 +205,7 @@ const deleteDeposit = async (req, res = response) => {
 
     res.json({
       ok: true,
+      deposit: deposit,
       message: "Depósito eliminado exitosamente",
     });
   } catch (error) {
@@ -193,4 +224,5 @@ module.exports = {
   getDepositById,
   updateDeposit,
   deleteDeposit,
+  getDepositsSaleControl,
 };

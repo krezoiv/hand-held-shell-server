@@ -73,6 +73,33 @@ const getAllVales = async (req, res = response) => {
   }
 };
 
+const getValesSalesControl = async (req, res = response) => {
+  try {
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(404).json({
+        ok: false,
+        message: "No se encontró un registro de SalesControl.",
+      });
+    }
+    const vales = await Vale.find({ salesControlId: lastSalesControl._id });
+    res.json({
+      ok: true,
+      vales,
+    });
+  } catch (error) {
+    console.error("Error al obtener vales:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Por favor, contacte al administrador.",
+      error: error.message,
+    });
+  }
+};
+
 // Obtener un vale por ID
 const getValeById = async (req, res = response) => {
   try {
@@ -154,7 +181,7 @@ const updateVale = async (req, res = response) => {
 // Eliminar un vale
 const deleteVale = async (req, res = response) => {
   try {
-    const valeId = req.params.id;
+    const valeId = req.params.valeId;
 
     const vale = await Vale.findById(valeId);
 
@@ -169,6 +196,7 @@ const deleteVale = async (req, res = response) => {
 
     res.json({
       ok: true,
+      vale: vale,
       message: "Vale eliminado exitosamente",
     });
   } catch (error) {
@@ -187,4 +215,5 @@ module.exports = {
   getValeById,
   updateVale,
   deleteVale,
+  getValesSalesControl,
 };

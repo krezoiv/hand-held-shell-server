@@ -72,6 +72,35 @@ const getAllCoupons = async (req, res = response) => {
   }
 };
 
+// Obtener todos los cupones
+const getCouponsSalesControl = async (req, res = response) => {
+  try {
+    const lastSalesControl = await SalesControl.findOne().sort({
+      salesDate: -1,
+    });
+
+    if (!lastSalesControl) {
+      return res.status(404).json({
+        ok: false,
+        message: "No se encontró un registro de SalesControl.",
+      });
+    }
+
+    const coupons = await Coupon.find({ salesControlId: lastSalesControl._id });
+    res.json({
+      ok: true,
+      coupons,
+    });
+  } catch (error) {
+    console.error("Error al obtener cupones:", error);
+    res.status(500).json({
+      ok: false,
+      msg: "Por favor, contacte al administrador.",
+      error: error.message,
+    });
+  }
+};
+
 // Obtener un cupón por ID
 const getCouponById = async (req, res = response) => {
   try {
@@ -153,7 +182,7 @@ const updateCoupon = async (req, res = response) => {
 // Eliminar un cupón
 const deleteCoupon = async (req, res = response) => {
   try {
-    const couponId = req.params.id;
+    const couponId = req.params.couponId;
 
     const coupon = await Coupon.findById(couponId);
 
@@ -168,6 +197,7 @@ const deleteCoupon = async (req, res = response) => {
 
     res.json({
       ok: true,
+      coupon: coupon,
       msg: "Cupón eliminado exitosamente",
     });
   } catch (error) {
@@ -186,4 +216,5 @@ module.exports = {
   getCouponById,
   updateCoupon,
   deleteCoupon,
+  getCouponsSalesControl,
 };

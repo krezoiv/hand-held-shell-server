@@ -7,10 +7,12 @@ const {
   getVoucherById,
   updateVoucher,
   deleteVoucher,
+  getVouchersSaleControl,
 } = require("../../controllers/accounting/vouches.controller");
 
 router.post("/createVouchers", validateJWT, createVoucher);
 router.get("/getAllVouchers", validateJWT, getAllVouchers);
+router.get("/getVouchersSaleControl", validateJWT, getVouchersSaleControl);
 router.get("/getVoucherById/:voucherId", validateJWT, getVoucherById);
 router.put("/updateVoucher/:voucherId", validateJWT, updateVoucher);
 router.delete("/deleteVoucher/:voucherId", validateJWT, deleteVoucher);
